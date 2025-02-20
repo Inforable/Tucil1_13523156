@@ -6,29 +6,21 @@ public class InputReader {
     static String S;
     static List<char[][]> blocks = new ArrayList<>();
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Masukkan path file: ");
-        String filePath = scanner.nextLine();
-        scanner.close();
-
-        try {
-            readFile(filePath);
-            printParsedData(); // Untuk mengecek apakah output sudah sesuai
-        } catch (IOException e) {
-            System.out.println("File tidak ditemukan");
-        }
-    }
-
     // Membaca file dan memparsing input
-    static void readFile(String filePath) throws IOException {
+    static boolean readFile(String filePath) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(filePath));
 
         // Membaca N, M, P
         String[] firstLine = br.readLine().split(" ");
-        N = Integer.parseInt(firstLine[0]);
-        M = Integer.parseInt(firstLine[1]);
-        P = Integer.parseInt(firstLine[2]);
+        // Validasi inputan N, M dan P
+        try {
+            N = Integer.parseInt(firstLine[0]);
+            M = Integer.parseInt(firstLine[1]);
+            P = Integer.parseInt(firstLine[2]); 
+        } catch (NumberFormatException e) {
+            System.out.println("Input N, M, atau P tidak valid.");
+            return false;
+        }
 
         // Membaca S
         S = br.readLine().trim();
@@ -44,11 +36,22 @@ public class InputReader {
                 continue;
             }
 
+            // Validasi inputan blok apakah semuanya alfabet atau spasi
+            if (!L.matches("[A-Z ]+")) {
+                System.out.println("Inputan block ada yang tidak valid");
+                return false;
+            }
+
             String firstChar = String.valueOf(L.charAt(0));
 
             // Jika karakter pertama berubah, maka blok sebelumnya sudah selesai
             if (!blockLines.isEmpty() && !firstChar.equals(prev)) {
-                blocks.add(convertToBlock(blockLines));
+                char[][] block = convertToBlock(blockLines);
+                if (block == null) {
+                    System.out.println("Blok tidak valid");
+                    return false;
+                }
+                blocks.add(block);
                 blockLines.clear();
             }
 
@@ -58,10 +61,22 @@ public class InputReader {
 
         // Jika sudah sampai di blok terakhir
         if (!blockLines.isEmpty()) {
-            blocks.add(convertToBlock(blockLines));
+            char[][] block = convertToBlock(blockLines);
+            if (block == null) {
+                System.out.println("Blok tidak valid");
+                return false;
+            }
+            blocks.add(block);
+        }
+
+        // Validasi Jumlah Block
+        if (blocks.size() != P) {
+            System.out.println("Jumlah blok tidak sesuai dengan P");
+            return false;
         }
 
         br.close();
+        return true;
     }
 
     // Mengubah list string menjadi array 2D
@@ -75,10 +90,24 @@ public class InputReader {
         }
 
         char[][] block = new char[row][col];
+        char firstBlockChar = ' ';
+        boolean validBlock = false;
+
         for (int i = 0; i < row; i++) {
             String L = blockLines.get(i);
             for (int j = 0; j < col; j++) {
-                block[i][j] = j < L.length() ? L.charAt(j) : '.';
+                char c = j < L.length() ? L.charAt(j) : '.';
+                block[i][j] = (c == ' ' ? '.' : c);
+
+                // Validasi apakah block memiliki alfabet yang sama
+                if (c != '.' && c != ' ') {
+                    if (!validBlock) {
+                        firstBlockChar = c;
+                        validBlock = true;
+                    } else if (c != firstBlockChar) {
+                        return null;
+                    }
+                }
             }
         } 
         return block;
@@ -99,7 +128,7 @@ public class InputReader {
     static void printBlock(char[][] block) {
         for (char[] row : block) {
             for (char cell : row) {
-                System.out.print((cell == '.' ? ' ' : cell) + "");
+                System.out.print(cell + "");
             }
             System.out.println();
         }
