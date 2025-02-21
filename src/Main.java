@@ -3,6 +3,7 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
+        // Membaca path file dari input user
         Scanner scanner = new Scanner(System.in);
         System.out.print("Masukkan path file: ");
         String filePath = scanner.nextLine();
@@ -17,12 +18,18 @@ public class Main {
             ReadInput.printParsedData();
 
             SolvePuzzle solver = new SolvePuzzle(ReadInput.N, ReadInput.M, ReadInput.blocks);
-            if (solver.solve(0)) {
-                System.out.println("Solusi ditemukan:");
+            long startTime = System.currentTimeMillis();
+            solver.solve(0);
+            long endTime = System.currentTimeMillis();
+
+            if (solver.isSolved()) {
+                System.out.println("Solusi ditemukan!");
                 solver.printBoard();
+                System.out.println("Waktu eksekusi: " + (endTime - startTime) + " ms");
             } else {
-                System.out.println("Tidak ada solusi");
+                System.out.println("Solusi tidak ditemukan.");
             }
+            System.out.println("Jumlah Iterasi: " + solver.getCount());
         } catch (IOException e) {
             System.out.println("File tidak ditemukan");
         }

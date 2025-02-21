@@ -5,6 +5,7 @@ public class SolvePuzzle {
     private char[][] board;
     private List<char[][]> blocks;
     private boolean solved = false;
+    private int count = 0;
 
     public SolvePuzzle(int N, int M, List<char[][]> blocks) {
         this.N = N;
@@ -20,33 +21,56 @@ public class SolvePuzzle {
         }
     }
 
-    public boolean solve(int idx) {
-        if (idx == blocks.size()) {
-            solved = true;
-            return true;
+    public boolean isSolved() {
+        return solved;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void solve(int blockIdx) {
+        if (blockIdx == blocks.size()) {
+            if (isBoardFull()) {
+                solved = true;
+            }
+            return; 
         }
 
-        char[][] block = blocks.get(idx);
+        char[][] block = blocks.get(blockIdx);
         List<char[][]> variations = generateVariations(block);
 
         for (char[][] var : variations) {
-            for (int r = 0; r < N; r++) {
-                for (int c = 0; c < M; c++) {
-                    if (canPlace(var, r, c)) {
-                        placeBlock(var, r, c, block[0][0]);
-                        if (solve(idx + 1)) {
-                            return true; // Jika berhasil menyelesaikan semua blok
+            for (int r = 0; r < N - var.length + 1; r++) {
+                for (int c = 0; c < M - var[0].length + 1; c++) {
+                    if (isValidPlaceBlock(var, r, c)) {
+                        placeValidBlock(var, r, c, block[0][0]);
+                        count++;
+                        solve(blockIdx + 1);
+                        if (solved) {
+                            return;
                         }
                         removeBlock(var, r, c); // Lakukan backtracking
                     }
                 }
             }
         }
-        return false;
+    }
+
+    // Pengecekan apakah board sudah terisi penuh
+    private boolean isBoardFull() {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                if (board[i][j] == '.') {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // Pengecekan untuk blok bisa diletakkan atau tidak
-    private boolean canPlace(char[][] block, int r, int c) {
+    private boolean isValidPlaceBlock(char[][] block, int r, int c) {
         int rowBlock = block.length;
         int colBlock = block[0].length;
 
@@ -64,7 +88,8 @@ public class SolvePuzzle {
         return true;
     }
 
-    private void placeBlock(char[][] block, int r, int c, char s) {
+    // Meletakkan blok yang valid
+    private void placeValidBlock(char[][] block, int r, int c, char s) {
         int rowBlock = block.length;
         int colBlock = block[0].length;
 
@@ -75,6 +100,7 @@ public class SolvePuzzle {
                 }
             }
         }
+        // printBoard(); // Debugging
     }
 
     // Melakukan backtracking
@@ -89,25 +115,27 @@ public class SolvePuzzle {
                 }
             }
         }
+        // printBoard(); // Debugging
     }
 
+    // Menghasilkan variasi dari blok
     private List<char[][]> generateVariations(char[][] block) {
         List<char[][]> var = new ArrayList<>();
         var.add(block);
         char[][] rotated = block;
 
-        // Terdapat 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
+        // Terdapat maksimal 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
         for (int i = 0; i < 3; i++) {
             rotated = rotate(rotated);
             var.add(rotated);
         }
 
-        // Terdapat 2 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
+        // Terdapat maksimal 2 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
         char[][] mirrored = mirror(block);
         var.add(mirrored);
         rotated = mirrored;
 
-        // Terdapat 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
+        // Terdapat maksimal 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
         for (int i = 0; i < 3; i++) {
             rotated = rotate(rotated);
             var.add(rotated);
@@ -144,15 +172,11 @@ public class SolvePuzzle {
     }
 
     public void printBoard() {
-        if (solved) {
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < M; j++) {
-                    System.out.print(board[i][j]);
-                }
-                System.out.println();
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                System.out.print(board[i][j]);
             }
-        } else {
-            System.out.println("Tidak ada solusi");
+            System.out.println();
         }
     }
 }
