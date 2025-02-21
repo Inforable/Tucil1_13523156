@@ -24,12 +24,12 @@ public class Main {
 
             if (solver.isSolved()) {
                 System.out.println("Solusi ditemukan!");
-                solver.printBoard();
-                System.out.println("Waktu eksekusi: " + (endTime - startTime) + " ms");
+                ColorBoard.printBoard(solver.getBoard());
+                System.out.println("Waktu Pencarian " + (endTime - startTime) + " ms");
             } else {
                 System.out.println("Solusi tidak ditemukan.");
             }
-            System.out.println("Jumlah Iterasi: " + solver.getCount());
+            System.out.println("Banyak Kasus yang Ditinjau: " + solver.getCount());
         } catch (IOException e) {
             System.out.println("File tidak ditemukan");
         }

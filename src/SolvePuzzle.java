@@ -29,6 +29,10 @@ public class SolvePuzzle {
         return count;
     }
 
+    public char[][] getBoard() {
+        return board;
+    }
+
     public void solve(int blockIdx) {
         if (blockIdx == blocks.size()) {
             if (isBoardFull()) {
@@ -171,12 +175,12 @@ public class SolvePuzzle {
         return mirrored;
     }
 
-    public void printBoard() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < M; j++) {
-                System.out.print(board[i][j]);
-            }
-            System.out.println();
-        }
-    }
+    // public void printBoard() {
+    //     for (int i = 0; i < N; i++) {
+    //         for (int j = 0; j < M; j++) {
+    //             System.out.print(board[i][j]);
+    //         }
+    //         System.out.println();
+    //     }
+    // }
 }
