@@ -8,74 +8,78 @@ public class ReadInput {
 
     // Membaca file dan memparsing input
     static boolean readFile(String filePath) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filePath));
-
-        // Membaca N, M, P
-        String[] firstLine = br.readLine().split(" ");
-        // Validasi inputan N, M dan P
-        try {
-            N = Integer.parseInt(firstLine[0]);
-            M = Integer.parseInt(firstLine[1]);
-            P = Integer.parseInt(firstLine[2]); 
-        } catch (NumberFormatException e) {
-            System.out.println("Input N, M, atau P tidak valid.");
-            return false;
-        }
-
-        // Membaca S
-        S = br.readLine().trim();
-
-        // Membaca blok
-        List<String> blockLines = new ArrayList<>();
-        String prev = ""; // Menyimpan karakter sebelumnya
-
-        String L;
-        while ((L = br.readLine()) != null) {
-            L = L.trim();
-            if (L.isEmpty()) {
-                continue;
-            }
-
-            // Validasi inputan blok apakah semuanya alfabet atau spasi
-            if (!L.matches("[A-Z ]+")) {
-                System.out.println("Inputan block ada yang tidak valid");
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            // Membaca N, M, P
+            String[] firstLine = br.readLine().split(" ");
+            // Validasi inputan N, M dan P (Harus berbentuk integer)
+            try {
+                N = Integer.parseInt(firstLine[0]);
+                M = Integer.parseInt(firstLine[1]);
+                P = Integer.parseInt(firstLine[2]); 
+            } catch (NumberFormatException e) {
+                System.out.println("Input N, M, atau P tidak valid.");
                 return false;
             }
 
-            String firstChar = String.valueOf(L.charAt(0));
+            // Membaca Jenis Kasus
+            S = br.readLine().trim();
 
-            // Jika karakter pertama berubah, maka blok sebelumnya sudah selesai
-            if (!blockLines.isEmpty() && !firstChar.equals(prev)) {
+            // Membaca block
+            List<String> blockLines = new ArrayList<>();
+            char prev = '0'; 
+
+            String L;
+            while ((L = br.readLine()) != null) {
+                // System.out.println(L); // Debugging
+                if (L.trim().isEmpty()) {
+                    continue;
+                }
+
+                // Melakukan validasi inputan blok apakah semuanya alfabet atau spasi
+                if (!L.matches("[A-Z ]+")) {
+                    System.out.println("Inputan block ada yang tidak valid");
+                    return false;
+                }
+
+                // Menentukan alfabet pertama
+                String charWithoutSpace = L.trim();
+                char firstChar = charWithoutSpace.charAt(0);
+
+                // Jika blockLines tidak kosong dan alfabet berubah, blok sebelumnya uda kelar
+                if (!blockLines.isEmpty() && firstChar != prev) {
+                    char[][] block = convertToBlock(blockLines);
+                    if (block == null) {
+                        System.out.println("Blok tidak valid");
+                        return false;
+                    }
+                    blocks.add(block);
+                    blockLines.clear();
+                }
+
+                blockLines.add(L); 
+                prev = firstChar;
+            }
+
+            // Jika sudah sampai di blok terakhir
+            if (!blockLines.isEmpty()) {
                 char[][] block = convertToBlock(blockLines);
                 if (block == null) {
                     System.out.println("Blok tidak valid");
                     return false;
                 }
                 blocks.add(block);
-                blockLines.clear();
             }
 
-            blockLines.add(L);
-            prev = firstChar;
-        }
-
-        // Jika sudah sampai di blok terakhir
-        if (!blockLines.isEmpty()) {
-            char[][] block = convertToBlock(blockLines);
-            if (block == null) {
-                System.out.println("Blok tidak valid");
+            // Validasi Jumlah Block
+            if (blocks.size() != P) {
+                System.out.println(blocks.size());
+                System.out.println("Jumlah blok tidak sesuai dengan P");
                 return false;
             }
-            blocks.add(block);
-        }
 
-        // Validasi Jumlah Block
-        if (blocks.size() != P) {
-            System.out.println("Jumlah blok tidak sesuai dengan P");
-            return false;
+            br.close();
         }
-
-        br.close();
+        // printParsedData(); // Debugging
         return true;
     }
 
@@ -96,6 +100,7 @@ public class ReadInput {
         for (int i = 0; i < row; i++) {
             String L = blockLines.get(i);
             for (int j = 0; j < col; j++) {
+                if (j < L.length()) {}
                 char c = j < L.length() ? L.charAt(j) : '.';
                 block[i][j] = (c == ' ' ? '.' : c);
 
@@ -113,7 +118,7 @@ public class ReadInput {
         return block;
     }
 
-    // Mencetak hasil parsing
+    // Mencetak hasil data input yang uda di-parsing
     static void printParsedData() {
         System.out.println("Ukuran Papan: " + N + " x " + M);
         System.out.println("Jumlah Blok: " + P);
