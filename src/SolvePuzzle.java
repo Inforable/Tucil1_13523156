@@ -5,7 +5,7 @@ public class SolvePuzzle {
     private char[][] board;
     private List<char[][]> blocks;
     private boolean solved = false;
-    private int count = 0;
+    private long count = 0;
 
     public SolvePuzzle(int N, int M, List<char[][]> blocks) {
         this.N = N;
@@ -13,7 +13,7 @@ public class SolvePuzzle {
         this.blocks = blocks;
         this.board = new char[N][M];
 
-        // Inisialisasi board
+        // Inisialisasi board dengan '.'
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 board[i][j] = '.';
@@ -25,7 +25,7 @@ public class SolvePuzzle {
         return solved;
     }
 
-    public int getCount() {
+    public long getCount() {
         return count;
     }
 
@@ -34,34 +34,44 @@ public class SolvePuzzle {
     }
 
     public void solve(int blockIdx) {
-        if (blockIdx == blocks.size()) {
+        // Kalau jumlah alfabet di blok kurang dari N * M, maka board tidak mungkin penuh
+        if (countAlphabetsInBlocks(blocks) < N * M) {
+            solved = false;
+            return;
+        }
+
+        // Jika semua blok sudah diletakkan, maka board uda selesai (tinggal di cek aja penuh atau engga)
+        if (blockIdx >= blocks.size()) {
             if (isBoardFull()) {
                 solved = true;
             }
-            return; 
+            return;
         }
 
         char[][] block = blocks.get(blockIdx);
         List<char[][]> variations = generateVariations(block);
+        // printVariations(variations); // Debugging
 
-        for (char[][] var : variations) {
-            for (int r = 0; r < N - var.length + 1; r++) {
-                for (int c = 0; c < M - var[0].length + 1; c++) {
-                    if (isValidPlaceBlock(var, r, c)) {
-                        placeValidBlock(var, r, c, block[0][0]);
+        for (int r = 0; r <= N; r++) {
+            for (int c = 0; c <= M; c++) {
+                for (char[][] var : variations) {
+                     if (isValidPlaceBlock(var, r, c)) {
+                        // Untuk kasus input yang awalnya bukan alfabet, cari alfabetnya dulu
+                        char s = findAlfabet(var);
+                        placeValidBlock(var, r, c, s);
                         count++;
                         solve(blockIdx + 1);
                         if (solved) {
                             return;
                         }
-                        removeBlock(var, r, c); // Lakukan backtracking
+                        removeLastBlock(var, r, c);
                     }
                 }
             }
         }
     }
 
-    // Pengecekan apakah board sudah terisi penuh
+    // Mengecek apakah board sudah terisi penuh
     private boolean isBoardFull() {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
@@ -73,12 +83,24 @@ public class SolvePuzzle {
         return true;
     }
 
-    // Pengecekan untuk blok bisa diletakkan atau tidak
+    // Mencari alfabet pada blok (khusus input yang awalnya bukan alfabet)
+    public char findAlfabet(char[][] block) {
+        for (int i = 0; i < block.length; i++) {
+            for (int j = 0; j < block[i].length; j++) {
+                if (block[i][j] != '.') {
+                    return block[i][j];
+                }
+            }
+        }
+        return '\0';
+    }
+
+    // Mengecek apakah block dapat diletakkan pada board
     private boolean isValidPlaceBlock(char[][] block, int r, int c) {
         int rowBlock = block.length;
         int colBlock = block[0].length;
 
-        if (r + rowBlock > N || c + colBlock > M) {
+        if (r < 0 || r + rowBlock > N || c < 0 || c + colBlock > M) {
             return false;
         }
 
@@ -92,11 +114,10 @@ public class SolvePuzzle {
         return true;
     }
 
-    // Meletakkan blok yang valid
+    // Menempatkan block yang valid pada board
     private void placeValidBlock(char[][] block, int r, int c, char s) {
         int rowBlock = block.length;
         int colBlock = block[0].length;
-
         for (int i = 0; i < rowBlock; i++) {
             for (int j = 0; j < colBlock; j++) {
                 if (block[i][j] != '.') {
@@ -104,14 +125,12 @@ public class SolvePuzzle {
                 }
             }
         }
-        // printBoard(); // Debugging
     }
 
-    // Melakukan backtracking
-    private void removeBlock(char[][] block, int r, int c) {
+    // Menghapus block terakhir dari board (backtracking)
+    private void removeLastBlock(char[][] block, int r, int c) {
         int rowBlock = block.length;
         int colBlock = block[0].length;
-
         for (int i = 0; i < rowBlock; i++) {
             for (int j = 0; j < colBlock; j++) {
                 if (block[i][j] != '.') {
@@ -119,68 +138,133 @@ public class SolvePuzzle {
                 }
             }
         }
-        // printBoard(); // Debugging
     }
 
-    // Menghasilkan variasi dari blok
+    // Menghasilkan semua variasi unik dari blok (rotasi 90 derajat dan pencerminan horizontal)
     private List<char[][]> generateVariations(char[][] block) {
-        List<char[][]> var = new ArrayList<>();
-        var.add(block);
-        char[][] rotated = block;
+        Set<String> have = new HashSet<>();
+        List<char[][]> variations = new ArrayList<>();
 
-        // Terdapat maksimal 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
-        for (int i = 0; i < 3; i++) {
-            rotated = rotate(rotated);
-            var.add(rotated);
+        // Variasi dari blok asli sebanyak 4 kali
+        char[][] currentBlock = block;
+        for (int i = 0; i < 4; i++) {
+            String key = matrixToString(currentBlock);
+            if (!have.contains(key)) {
+                variations.add(copyMatrix(currentBlock));
+                have.add(key);
+            }
+            currentBlock = rotate(currentBlock);
         }
 
-        // Terdapat maksimal 2 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
+        // Variasi dari blok yang dicerminkan dan rotasinya sebanya 4 kali juga
         char[][] mirrored = mirror(block);
-        var.add(mirrored);
-        rotated = mirrored;
-
-        // Terdapat maksimal 4 variasi block yang mungkin (dihitung dengan posisi awalnya juga)
-        for (int i = 0; i < 3; i++) {
-            rotated = rotate(rotated);
-            var.add(rotated);
+        for (int i = 0; i < 4; i++) {
+            String key = matrixToString(mirrored);
+            if (!have.contains(key)) {
+                variations.add(copyMatrix(mirrored));
+                have.add(key);
+            }
+            mirrored = rotate(mirrored);
         }
-        return var;
+        return variations;
     }
 
-    // Melakukan rotasi 90 derajat
-    private char[][] rotate(char[][] block) {
-        int rowBlock = block.length;
-        int colBlock = block[0].length;
-        char[][] rotated = new char[colBlock][rowBlock];
+    // Mengubah matrix ke string
+    private String matrixToString(char[][] matrix) {
+        StringBuilder sb = new StringBuilder();
+        for (char[] row : matrix) {
+            sb.append(new String(row)).append("\n");
+        }
+        return sb.toString();
+    }
 
-        for (int i = 0; i < rowBlock; i++) {
-            for (int j = 0; j < colBlock; j++) {
-                rotated[j][rowBlock - 1 - i] = block[i][j];
+    // Membuat salinan matrix
+    private char[][] copyMatrix(char[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        char[][] copy = new char[row][col];
+        for (int i = 0; i < row; i++) {
+            System.arraycopy(matrix[i], 0, copy[i], 0, col);
+        }
+        return copy;
+    }
+
+    // Rotasi matrix 90 derajat
+    private char[][] rotate(char[][] block) {
+        int row = block.length;
+        int col = block[0].length;
+        char[][] rotated = new char[col][row];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                rotated[j][row - 1 - i] = block[i][j];
             }
         }
         return rotated;
     }
 
-    // Melakukan pencerminan secara horizontal
+    // Pencerminan horizontal matrix
     private char[][] mirror(char[][] block) {
-        int rowBlock = block.length;
-        int colBlock = block[0].length;
-        char[][] mirrored = new char[rowBlock][colBlock];
-
-        for (int i = 0; i < rowBlock; i++) {
-            for (int j = 0; j < colBlock; j++) {
-                mirrored[i][colBlock - 1 - j] = block[i][j];
+        int row = block.length;
+        int col = block[0].length;
+        char[][] mirrored = new char[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                mirrored[i][col - 1 - j] = block[i][j];
             }
         }
         return mirrored;
     }
 
-    // public void printBoard() {
-    //     for (int i = 0; i < N; i++) {
-    //         for (int j = 0; j < M; j++) {
-    //             System.out.print(board[i][j]);
-    //         }
-    //         System.out.println();
-    //     }
-    // }
+    // Menghitung jumlah alfabet pada semua blok
+    public int countAlphabetsInBlocks(List<char[][]> blocks) {
+        int total = 0;
+    
+        for (char[][] block : blocks) {
+            total += countAlphabetsInBlock(block);
+        }
+    
+        return total;
+    }
+    
+    // Menghitung jumlah alfabet pada satu blok
+    private int countAlphabetsInBlock(char[][] block) {
+        int cnt = 0;
+    
+        for (int i = 0; i < block.length; i++) {
+            for (int j = 0; j < block[i].length; j++) {
+                if (block[i][j] != '.' && block[i][j] != ' ') {
+                    cnt++;
+                }
+            }
+        }
+    
+        return cnt;
+    }
+
+    // Menampilkan board saat ini untuk debugging
+    public void printWhiteBoard() {
+        System.out.println("===== Board =====");
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                System.out.print(board[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println("=================\n");
+    }
+
+    // Menampilkan semua variasi blok untuk debugging
+    public void printVariations(List<char[][]> variations) {
+        int index = 1;
+        for (char[][] var : variations) {
+            System.out.println("----- Variation #" + index++ + " -----");
+            for (char[] row : var) {
+                for (char ch : row) {
+                    System.out.print(ch);
+                }
+                System.out.println();
+            }
+            System.out.println("---------------------\n");
+        }
+    }
 }
