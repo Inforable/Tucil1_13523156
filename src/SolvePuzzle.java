@@ -160,15 +160,6 @@ public class SolvePuzzle {
         return variations;
     }
 
-    // Mengubah matrix ke string
-    // private String matrixToString(char[][] matrix) {
-    //     StringBuilder sb = new StringBuilder();
-    //     for (char[] row : matrix) {
-    //         sb.append(new String(row)).append("\n");
-    //     }
-    //     return sb.toString();
-    // }
-
     // Membuat salinan matrix
     private char[][] copyMatrix(char[][] matrix) {
         int row = matrix.length;
