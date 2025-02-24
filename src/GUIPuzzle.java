@@ -235,6 +235,19 @@ public class GUIPuzzle {
                     g.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
                     g.setColor(Color.BLACK);
                     g.drawRect(j * cellSize, i * cellSize, cellSize, cellSize);
+
+                    if (c != '.') {
+                        g.setColor(Color.BLACK);
+                        Font lexendFont = new Font("Lexend", Font.BOLD, cellSize - 10);
+                        g.setFont(lexendFont);
+                        FontMetrics fm = g.getFontMetrics(lexendFont);
+                        String letter = String.valueOf(c);
+                        int textWidth = fm.stringWidth(letter);
+                        int textHeight = fm.getAscent();
+                        int x = j * cellSize + (cellSize - textWidth) / 2;
+                        int y = i * cellSize + ((cellSize - fm.getHeight()) / 2) + fm.getAscent();
+                        g.drawString(letter, x, y);
+                    }
                 }
             }
         }
