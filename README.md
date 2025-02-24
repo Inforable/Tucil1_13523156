@@ -11,19 +11,19 @@ This program is a puzzle solver based on txt input files. The user can run the p
 ## Usage
 
 ### CLI
-1. Buka a new terminal di dalam repositori
-2. Lalu, jalankan
+1. Open a new terminal in the repository
+2. Then, run
     ```bash
     cd bin
     java Main
 
 ### GUI
-1. Buka a new terminal di dalam repositori
-2. Lalu, jalankan
+1. Open a new terminal in the repository
+2. Then, run
     ```bash
     cd bin
     java GUIPuzzle
 
 ## Author
 
-Hasri Fayadh Muqaffa - 13523156
+**Hasri Fayadh Muqaffa - 13523156**
