@@ -142,41 +142,32 @@ public class SolvePuzzle {
 
     // Menghasilkan semua variasi unik dari blok (rotasi 90 derajat dan pencerminan horizontal)
     private List<char[][]> generateVariations(char[][] block) {
-        Set<String> have = new HashSet<>();
         List<char[][]> variations = new ArrayList<>();
 
         // Variasi dari blok asli sebanyak 4 kali
         char[][] currentBlock = block;
         for (int i = 0; i < 4; i++) {
-            String key = matrixToString(currentBlock);
-            if (!have.contains(key)) {
-                variations.add(copyMatrix(currentBlock));
-                have.add(key);
-            }
+            variations.add(copyMatrix(currentBlock));
             currentBlock = rotate(currentBlock);
         }
 
         // Variasi dari blok yang dicerminkan dan rotasinya sebanya 4 kali juga
         char[][] mirrored = mirror(block);
         for (int i = 0; i < 4; i++) {
-            String key = matrixToString(mirrored);
-            if (!have.contains(key)) {
-                variations.add(copyMatrix(mirrored));
-                have.add(key);
-            }
+            variations.add(copyMatrix(mirrored));
             mirrored = rotate(mirrored);
         }
         return variations;
     }
 
     // Mengubah matrix ke string
-    private String matrixToString(char[][] matrix) {
-        StringBuilder sb = new StringBuilder();
-        for (char[] row : matrix) {
-            sb.append(new String(row)).append("\n");
-        }
-        return sb.toString();
-    }
+    // private String matrixToString(char[][] matrix) {
+    //     StringBuilder sb = new StringBuilder();
+    //     for (char[] row : matrix) {
+    //         sb.append(new String(row)).append("\n");
+    //     }
+    //     return sb.toString();
+    // }
 
     // Membuat salinan matrix
     private char[][] copyMatrix(char[][] matrix) {
